@@ -67,7 +67,7 @@
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js';
       // Add Firebase products that you want to use
       import { getAuth } from 'https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js';
-      import { getFirestore } from 'https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js';
+      import { getFirestore, collection, onSnapshot, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js';
 
       /* Change the configuration */
 
@@ -82,8 +82,40 @@
       // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
+      const quancollection = collection(db, 'inventory');
 
+      // Get all the item name element
+      const itemnames = document.querySelectorAll('.menu-item h3');
+      const quantityE = document.querySelectorAll('.menu-item p span');
+      const buttonE = document.querySelectorAll('.menu-item button');
 
+      // test the real time snapshot
+      onSnapshot(quancollection, (snapshot)=>{
+        snapshot.forEach((doc)=>{
+          const data = doc.data();
+          console.log(data);
+          // update on the screen
+          for (var i in itemnames){
+            var name = itemnames[i].textContent; //h3 element val
+            if (data[name] !==undefined){ // check if value is defined
+              quantityE[i].innerText = data[name];
+            } // check to make sure the value is defined
+          }
+        });
+      });
+
+      const handleevent = (e) => {
+        var itemname = e.target.parentElement.querySelector('h3').textContent;
+        var itemquantity = parseInt(e.target.parentElement.querySelector('p span').textContent)-1;
+        console.log(itemname + " " + itemquantity)
+        // alert("working");
+        updateDoc(doc(quancollection, 'inventorylist'), {[itemname]:itemquantity});
+      }
+
+      // add event to change the quantities
+      buttonE.forEach((button)=>{
+        button.addEventListener('click', handleevent);
+      });
 
     </script>
   </body>
